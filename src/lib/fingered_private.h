@@ -24,3 +24,6 @@ extern int _fingered_log_dom_global;
 Eina_Bool fingered_event_add(void *data, int type, void *ev);
 Eina_Bool fingered_event_del(void *data, int type, void *ev);
 Eina_Bool fingered_event_data(void *data, int type, void *ev);
+Eina_Bool fingered_event_write(void *data, int type, void *ev);
+
+Fingered_User * fingered_user_new(const char *user, size_t len, Ecore_Con_Client *cl);
