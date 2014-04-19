@@ -22,12 +22,89 @@ typedef struct _User
    char    *dir;
 } User;
 
+typedef struct _User_Execute
+{
+   Fingered_User *fu;
+   Ecore_Exe *exe;
+
+   struct
+   {
+      Ecore_Event_Handler *data,
+                          *del;
+   } ev;
+} User_Execute;
+
+Eina_Bool
+_user_execute_data(void *data,
+                   int type EINA_UNUSED,
+                   void *ev)
+{
+   Ecore_Exe_Event_Data *event = ev;
+   User_Execute *ue = data;
+
+   DBG("data[%p] ev[%p]", data, ev);
+
+   fingered_user_send(ue->fu, event->data, event->size);
+   return EINA_TRUE;
+}
+
+Eina_Bool
+_user_execute_del(void *data,
+                  int type EINA_UNUSED,
+                  void *ev)
+{
+   Ecore_Exe_Event_Del *event = ev;
+   User_Execute *ue = data;
+
+   DBG("data[%p] ev[%p]", data, ev);
+
+   fingered_user_free(ue->fu);
+   ecore_exe_free(ue->exe);
+   ecore_event_handler_del(ue->ev.data);
+   ecore_event_handler_del(ue->ev.del);
+   free(ue);
+   return EINA_TRUE;
+}
 
 void
 _user_execute(User *u,
               const char *s)
 {
+   uid_t uid_orig;
+   gid_t gid_orig;
+   User_Execute *ue;
+
    DBG("u[%p] s[%s]", u, s);
+
+   uid_orig = geteuid();
+   gid_orig = getegid();
+
+   seteuid(u->uid);
+   setegid(u->gid);
+
+   ue = calloc(1, sizeof(User_Execute));
+   if (!ue)
+     {
+        ERR("Failed to allocate User_Execute structure.");
+        goto execute_end;
+     }
+
+   ue->fu = u->fu;
+
+#define _EV(_a, _b, _c, _d)                                                    \
+   _a = ecore_event_handler_add(ECORE_EXE_EVENT_##_b,                          \
+                                _user_execute_##_c, _d)
+   _EV(ue->ev.data, DATA, data, ue);
+   _EV(ue->ev.del, DEL, del, ue);
+#undef _EV
+
+   DBG("Executing %s", s);
+   ue->exe = ecore_exe_pipe_run(s,
+                                ECORE_EXE_PIPE_READ_LINE_BUFFERED |
+                                ECORE_EXE_PIPE_READ, ue);
+execute_end:
+   seteuid(uid_orig);
+   setegid(gid_orig);
 }
 
 void
@@ -94,7 +171,6 @@ _user_check(User *u)
 
 free_s:
    free(s);
-   fingered_user_free(u->fu);
    free(u->dir);
    free(u);
 }
