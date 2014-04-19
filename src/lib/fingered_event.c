@@ -67,8 +67,10 @@ fingered_event_data(void *data,
    Fingered *f;
    Fingered_User *fu;
    char *n,
+        *r,
         *p;
    char fmt[128];
+   size_t l;
 
    DBG("data[%p] ev[%p]", data, ev);
 
@@ -84,16 +86,23 @@ fingered_event_data(void *data,
    printf(fmt, event->data);
 
    n = memchr(event->data, '\n', event->size);
-   if ((!n) || (event->size == 1) || (*(n-1) != '\r'))
+   if (!n)
      {
-        ERR("Invalid data received from %s",
-            ecore_con_client_ip_get(event->client));
-        ecore_con_client_del(event->client);
-        return EINA_TRUE;
+        l = event->size;
+        goto check_user;
      }
 
+   r = memchr(event->data, '\r', event->size);
+   if (!r)
+     {
+        l = n - (char *)event->data;
+        goto check_user;
+     }
 
-   for (p = event->data; (n - p) > 1; p++)
+   l = r - (char *)event->data;
+
+check_user:
+   for (p = event->data; (size_t)(p - (char *)event->data) < l; p++)
      {
         if (isalnum(*p))
           continue;
@@ -102,8 +111,7 @@ fingered_event_data(void *data,
         return EINA_TRUE;
      }
 
-   fu = fingered_user_new(event->data, n - (char *)event->data - 1,
-                          event->client);
+   fu = fingered_user_new(event->data, l, event->client);
    if (!fu)
      return EINA_TRUE;
 
