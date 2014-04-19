@@ -75,6 +75,14 @@ fingered_event_data(void *data,
    f = data;
    event = ev;
 
+   snprintf(fmt, sizeof(fmt),
+            "Received %i bytes from client:\n"
+            ">>>>>\n"
+            "%%.%is\n"
+            ">>>>>\n",
+            event->size, event->size);
+   printf(fmt, event->data);
+
    n = memchr(event->data, '\n', event->size);
    if ((!n) || (event->size == 1) || (*(n-1) != '\r'))
      {
@@ -84,13 +92,6 @@ fingered_event_data(void *data,
         return EINA_TRUE;
      }
 
-   snprintf(fmt, sizeof(fmt),
-            "Received %i bytes from client:\n"
-            ">>>>>\n"
-            "%%.%is\n"
-            ">>>>>\n",
-            event->size, event->size);
-   printf(fmt, event->data);
 
    for (p = event->data; (n - p) > 1; p++)
      {
