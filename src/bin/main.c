@@ -44,7 +44,8 @@ _user_execute_data(void *data,
 
    DBG("data[%p] ev[%p]", data, ev);
 
-   fingered_user_send(ue->fu, event->data, event->size);
+   fingered_user_send(ue->fu, event->data, event->size-1);
+   fingered_user_send(ue->fu, "\n", 1);
    return EINA_TRUE;
 }
 
@@ -53,7 +54,6 @@ _user_execute_del(void *data,
                   int type EINA_UNUSED,
                   void *ev)
 {
-   Ecore_Exe_Event_Del *event = ev;
    User_Execute *ue = data;
 
    DBG("data[%p] ev[%p]", data, ev);
