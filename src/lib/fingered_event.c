@@ -51,9 +51,12 @@ fingered_event_del(void *data,
                    void *ev)
 {
    Ecore_Con_Event_Client_Del *del;
+   Fingered_User *fu = data;
 
    DBG("data[%p] ev[%p]", data, ev);
    del = ev;
+
+   fingered_user_free(fu);
    return EINA_TRUE;
 }
 

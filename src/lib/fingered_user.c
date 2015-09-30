@@ -42,6 +42,7 @@ fingered_user_send(Fingered_User *fu,
 {
    ecore_con_client_send(fu->cl, data, len);
    fu->queued += len;
+   ecore_con_client_flush(fu->cl);
    return EINA_TRUE;
 }
 

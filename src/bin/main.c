@@ -137,13 +137,14 @@ _user_read(User *u,
         ERR("Failed to mmap file %s", s);
         goto close_file;
      }
-
+DBG("Sending %d bytes", l);
    fingered_user_send(u->fu, d, l);
 
 close_file:
    eina_file_close(ef);
 user_read_end:
-   fingered_user_free(u->fu);
+//   fingered_user_free(u->fu);
+   return;
 }
 
 void

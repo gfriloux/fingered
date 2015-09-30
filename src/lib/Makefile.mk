@@ -1,6 +1,6 @@
 MAINTAINERCLEANFILES += src/lib/*.gc{no,da}
 
-lib_LTLIBRARIES = src/lib/libfingered.la
+noinst_LTLIBRARIES = src/lib/libfingered.la
 
 src_lib_libfingered_la_SOURCES = \
 src/lib/fingered_main.c \
