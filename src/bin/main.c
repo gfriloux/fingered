@@ -43,9 +43,7 @@ _user_execute_data(void *data,
    User_Execute *ue = data;
 
    DBG("data[%p] ev[%p]", data, ev);
-
-   fingered_user_send(ue->fu, event->data, event->size-1);
-   fingered_user_send(ue->fu, "\n", 1);
+   fingered_user_send(ue->fu, event->data, event->size);
    return EINA_TRUE;
 }
 
@@ -59,7 +57,6 @@ _user_execute_del(void *data,
    DBG("data[%p] ev[%p]", data, ev);
 
    fingered_user_free(ue->fu);
-   ecore_exe_free(ue->exe);
    ecore_event_handler_del(ue->ev.data);
    ecore_event_handler_del(ue->ev.del);
    free(ue);
@@ -99,9 +96,7 @@ _user_execute(User *u,
 #undef _EV
 
    DBG("Executing %s", s);
-   ue->exe = ecore_exe_pipe_run(s,
-                                ECORE_EXE_PIPE_READ_LINE_BUFFERED |
-                                ECORE_EXE_PIPE_READ, ue);
+   ue->exe = ecore_exe_pipe_run(s, ECORE_EXE_PIPE_READ, ue);
 execute_end:
    seteuid(uid_orig);
    setegid(gid_orig);
